@@ -4,26 +4,106 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Family Points Tracker</title>
+
+    <!-- Supabase Library: include this ONCE only -->
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+
     <style>
-        body { font-family: system-ui, sans-serif; max-width: 600px; margin: 20px auto; padding: 0 10px; background: #f9f9f9; }
-        .card { background: white; padding: 20px; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.1); margin-bottom: 20px; }
-        .form-group { margin-bottom: 15px; }
-        label { display: block; margin-bottom: 5px; font-weight: bold; }
-        input, textarea, select { width: 100%; padding: 8px; border: 1px solid #ccc; border-radius: 4px; box-sizing: border-box; }
-        button { background: #0070f3; color: white; border: none; padding: 10px 15px; border-radius: 4px; cursor: pointer; font-size: 16px; }
-        button:hover { background: #0051a8; }
-        .log-item { padding: 10px; border-bottom: 1px solid #eee; display: flex; justify-content: space-between; }
-        .points-positive { color: green; font-weight: bold; }
-        .points-negative { color: red; font-weight: bold; }
+        body {
+            font-family: system-ui, sans-serif;
+            max-width: 600px;
+            margin: 20px auto;
+            padding: 0 10px;
+            background: #f9f9f9;
+        }
+
+        .card {
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            margin-bottom: 20px;
+        }
+
+        .form-group {
+            margin-bottom: 15px;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: bold;
+        }
+
+        input,
+        textarea,
+        select {
+            width: 100%;
+            padding: 8px;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            box-sizing: border-box;
+            font-size: 16px;
+        }
+
+        button {
+            background: #0070f3;
+            color: white;
+            border: none;
+            padding: 10px 15px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 16px;
+        }
+
+        button:hover {
+            background: #0051a8;
+        }
+
+        button:disabled {
+            background: #999;
+            cursor: not-allowed;
+        }
+
+        .log-item {
+            padding: 10px 0;
+            border-bottom: 1px solid #eee;
+            display: flex;
+            justify-content: space-between;
+            gap: 12px;
+        }
+
+        .points-positive {
+            color: green;
+            font-weight: bold;
+            white-space: nowrap;
+        }
+
+        .points-negative {
+            color: red;
+            font-weight: bold;
+            white-space: nowrap;
+        }
+
+        .error {
+            color: red;
+            font-weight: bold;
+        }
+
+        .muted {
+            color: #666;
+            font-size: 14px;
+        }
     </style>
 </head>
+
 <body>
 
     <h2>Family Points Tracker</h2>
 
     <div class="card">
         <h3>Log New Incident</h3>
+
         <form id="behaviorForm">
             <div class="form-group">
                 <label for="childName">Child</label>
@@ -32,15 +112,18 @@
                     <option value="Daughter">Daughter</option>
                 </select>
             </div>
+
             <div class="form-group">
                 <label for="points">Points (Use negative for deductions)</label>
                 <input type="number" id="points" placeholder="e.g., 10 or -5" required>
             </div>
+
             <div class="form-group">
                 <label for="remarks">What happened? (Be as specific as you like)</label>
                 <textarea id="remarks" rows="3" placeholder="Enter the unique details of the event..." required></textarea>
             </div>
-            <button type="submit">Submit Log</button>
+
+            <button id="submitButton" type="submit">Submit Log</button>
         </form>
     </div>
 
@@ -51,90 +134,176 @@
     </div>
 
     <script>
-        // 1. Database Configuration
+        // ============================
+        // 1. Supabase Configuration
+        // ============================
+
         const SUPABASE_URL = "https://xyrcvnzrzzvujbyafzes.supabase.co";
-        const SUPABASE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Inh5cmN2bnpyenp2dWpieWFmemVzIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODI0NTU3MzgsImV4cCI6MjA5ODAzMTczOH0.bWYZGkf-2o7NirqSFi-VOQHTUbTaCylmi80mZM84pYA";
-        
-        // Initializing client safely as 'supabaseClient'
-        const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
-        const form = document.getElementById('behaviorForm');
-        const logsList = document.getElementById('logsList');
-        const tallyDiv = document.getElementById('tally');
+        // Paste your Supabase ANON PUBLIC key here.
+        // Do not use the service role key in browser code.
+        const SUPABASE_KEY = "PASTE_YOUR_ANON_KEY_HERE";
 
-        // 2. Fetch and display data from Supabase
+        // Important:
+        // The CDN library is called window.supabase.
+        // Your database client should NOT be called "supabase",
+        // otherwise you may get: Identifier 'supabase' has already been declared.
+        const supabaseClient = window.supabase.createClient(
+            SUPABASE_URL,
+            SUPABASE_KEY
+        );
+
+        // ============================
+        // 2. Page Elements
+        // ============================
+
+        const form = document.getElementById("behaviorForm");
+        const logsList = document.getElementById("logsList");
+        const tallyDiv = document.getElementById("tally");
+        const submitButton = document.getElementById("submitButton");
+
+        // ============================
+        // 3. Helper Functions
+        // ============================
+
+        function escapeHtml(value) {
+            return String(value)
+                .replaceAll("&", "&amp;")
+                .replaceAll("<", "&lt;")
+                .replaceAll(">", "&gt;")
+                .replaceAll('"', "&quot;")
+                .replaceAll("'", "&#039;");
+        }
+
+        function showError(message, error) {
+            logsList.innerHTML = `<p class="error">${message}</p>`;
+            console.error(message, error);
+        }
+
+        // ============================
+        // 4. Fetch Logs
+        // ============================
+
         async function fetchLogs() {
-            const { data, error } = await supabaseClient
-                .from('behavior_log')
-                .select('*')
-                .order('created_at', { ascending: false });
+            logsList.innerHTML = "Loading logs...";
+            tallyDiv.innerHTML = "";
 
-            if (error) {
-                logsList.innerHTML = "Error loading data from database.";
-                console.error("Fetch error:", error);
+            try {
+                const { data, error } = await supabaseClient
+                    .from("behavior_log")
+                    .select("*")
+                    .order("created_at", { ascending: false });
+
+                if (error) {
+                    showError("Error loading logs. Check the Console for details.", error);
+                    return;
+                }
+
+                const totals = {
+                    Son: 0,
+                    Daughter: 0
+                };
+
+                let html = "";
+
+                data.forEach(item => {
+                    const childName = item.child_name || "Unknown";
+                    const points = Number(item.points) || 0;
+                    const remarks = item.remarks || "";
+                    const createdAt = item.created_at
+                        ? new Date(item.created_at).toLocaleString()
+                        : "No date";
+
+                    totals[childName] = (totals[childName] || 0) + points;
+
+                    const pointsClass = points >= 0 ? "points-positive" : "points-negative";
+                    const pointsText = points >= 0 ? `+${points}` : `${points}`;
+
+                    html += `
+                        <div class="log-item">
+                            <div>
+                                <strong>${escapeHtml(childName)}</strong>: ${escapeHtml(remarks)}
+                                <br>
+                                <span class="muted">${escapeHtml(createdAt)}</span>
+                            </div>
+                            <span class="${pointsClass}">${pointsText}</span>
+                        </div>
+                    `;
+                });
+
+                tallyDiv.innerHTML = `
+                    Current Standings:
+                    Son: ${totals.Son} pts |
+                    Daughter: ${totals.Daughter} pts
+                `;
+
+                logsList.innerHTML = html || "No incidents logged yet.";
+
+            } catch (err) {
+                showError("Unexpected JavaScript error while loading logs.", err);
+            }
+        }
+
+        // ============================
+        // 5. Submit New Log
+        // ============================
+
+        form.addEventListener("submit", async function(event) {
+            event.preventDefault();
+
+            const child_name = document.getElementById("childName").value;
+            const points = parseInt(document.getElementById("points").value, 10);
+            const remarks = document.getElementById("remarks").value.trim();
+
+            if (Number.isNaN(points)) {
+                alert("Please enter a valid number of points.");
                 return;
             }
 
-            const totals = { "Son": 0, "Daughter": 0 };
-            let html = '';
+            if (!remarks) {
+                alert("Please enter what happened.");
+                return;
+            }
 
-            data.forEach(item => {
-                // Tally points per child dynamically
-                if (totals[item.child_name] !== undefined) {
-                    totals[item.child_name] += item.points;
-                } else {
-                    totals[item.child_name] = item.points;
+            submitButton.disabled = true;
+            submitButton.textContent = "Submitting...";
+
+            try {
+                const { error } = await supabaseClient
+                    .from("behavior_log")
+                    .insert([
+                        {
+                            child_name: child_name,
+                            points: points,
+                            remarks: remarks
+                        }
+                    ]);
+
+                if (error) {
+                    console.error("Insert error:", error);
+                    alert("Failed to log event. Check the Console for details.");
+                    return;
                 }
 
-                // Format timestamp and styling
-                const date = new Date(item.created_at).toLocaleDateString();
-                const ptsClass = item.points >= 0 ? 'points-positive' : 'points-negative';
-                const ptsSign = item.points >= 0 ? `+${item.points}` : item.points;
-
-                html += `
-                    <div class="log-item">
-                        <div>
-                            <strong>${item.child_name}</strong>: ${item.remarks} <br>
-                            <small style="color: #666;">${date}</small>
-                        </div>
-                        <span class="${ptsClass}">${ptsSign}</span>
-                    </div>
-                `;
-            });
-
-            // Update Current Standings DOM
-            let tallyHtml = 'Current Standings: ';
-            for (const [child, score] of Object.entries(totals)) {
-                tallyHtml += `${child}: ${score}pts | `;
-            }
-            tallyDiv.innerHTML = tallyHtml.slice(0, -3);
-
-            logsList.innerHTML = html || 'No incidents logged yet.';
-        }
-
-        // 3. Handle New Form Submission
-        form.addEventListener('submit', async (e) => {
-            e.preventDefault();
-            
-            const child_name = document.getElementById('childName').value;
-            const points = parseInt(document.getElementById('points').value, 10);
-            const remarks = document.getElementById('remarks').value;
-
-            const { error } = await supabaseClient
-                .from('behavior_log')
-                .insert([{ child_name, points, remarks }]);
-
-            if (error) {
-                alert('Failed to log event into database.');
-                console.error("Insert error:", error);
-            } else {
                 form.reset();
-                fetchLogs(); // Automatically refresh UI list
+                await fetchLogs();
+
+            } catch (err) {
+                console.error("Unexpected insert error:", err);
+                alert("Unexpected error. Check the Console for details.");
+
+            } finally {
+                submitButton.disabled = false;
+                submitButton.textContent = "Submit Log";
             }
         });
 
-        // Trigger initial data call on page load
+        // ============================
+        // 6. Load Logs on Page Load
+        // ============================
+
         fetchLogs();
     </script>
+
 </body>
 </html>
