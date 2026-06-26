@@ -51,11 +51,12 @@
     </div>
 
     <script>
-        // 1. REPLACE THESE WITH YOUR ACTUAL SUPABASE DETAILS
+        // 1. YOUR SUPABASE DETAILS (PERFECTLY SET)
         const SUPABASE_URL = "https://xyrcvnzrzzvujbyafzes.supabase.co";
         const SUPABASE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Inh5cmN2bnpyenp2dWpieWFmemVzIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODI0NTU3MzgsImV4cCI6MjA5ODAzMTczOH0.bWYZGkf-2o7NirqSFi-VOQHTUbTaCylmi80mZM84pYA";
         
-        const supabase = @supabase/supabase-js.createClient(SUPABASE_URL, SUPABASE_KEY);
+        // FIXED: Removed the invalid "@supabase/supabase-js." namespace call
+        const supabase = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
         const form = document.getElementById('behaviorForm');
         const logsList = document.getElementById('logsList');
@@ -63,7 +64,6 @@
 
         // 2. Fetch and display data
         async function fetchLogs() {
-            // Fetch recent logs
             const { data, error } = await supabase
                 .from('behavior_log')
                 .select('*')
@@ -75,20 +75,16 @@
                 return;
             }
 
-            // Calculate totals dynamically
             const totals = {};
             let html = '';
 
             data.forEach(item => {
-                // Tally points per child
                 totals[item.child_name] = (totals[item.child_name] || 0) + item.points;
 
-                // Format timestamp
                 const date = new Date(item.created_at).toLocaleDateString();
                 const ptsClass = item.points >= 0 ? 'points-positive' : 'points-negative';
                 const ptsSign = item.points >= 0 ? `+${item.points}` : item.points;
 
-                // Build the list HTML
                 html += `
                     <div class="log-item">
                         <div>
@@ -100,12 +96,11 @@
                 `;
             });
 
-            // Display totals
             let tallyHtml = 'Current Standings: ';
             for (const [child, score] of Object.entries(totals)) {
                 tallyHtml += `${child}: ${score}pts | `;
             }
-            tallyDiv.innerHTML = tallyHtml.slice(0, -3); // remove trailing separator
+            tallyDiv.innerHTML = tallyHtml.slice(0, -3);
 
             logsList.innerHTML = html || 'No incidents logged yet.';
         }
@@ -127,7 +122,7 @@
                 console.error(error);
             } else {
                 form.reset();
-                fetchLogs(); // Refresh the list
+                fetchLogs(); 
             }
         });
 
