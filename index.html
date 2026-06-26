@@ -55,7 +55,7 @@
         const SUPABASE_URL = "https://xyrcvnzrzzvujbyafzes.supabase.co";
         const SUPABASE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Inh5cmN2bnpyenp2dWpieWFmemVzIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODI0NTU3MzgsImV4cCI6MjA5ODAzMTczOH0.bWYZGkf-2o7NirqSFi-VOQHTUbTaCylmi80mZM84pYA";
         
-        // FIXED: Initialized client safely as 'supabaseClient'
+        // Initializing client safely as 'supabaseClient'
         const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
         const form = document.getElementById('behaviorForm');
