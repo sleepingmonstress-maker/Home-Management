@@ -9,129 +9,395 @@
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 
     <style>
+        * {
+            box-sizing: border-box;
+        }
+
         body {
-            font-family: system-ui, sans-serif;
-            max-width: 600px;
-            margin: 20px auto;
-            padding: 0 10px;
-            background: #f9f9f9;
+            font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+            margin: 0;
+            padding: 24px 12px;
+            min-height: 100vh;
+            background:
+                radial-gradient(circle at top left, #ffe3f4 0, transparent 32%),
+                radial-gradient(circle at top right, #d8f6ff 0, transparent 30%),
+                linear-gradient(135deg, #fff7d6, #f4f0ff 45%, #e9fbff);
+            color: #161616;
+        }
+
+        .app-shell {
+            max-width: 760px;
+            margin: 0 auto;
+        }
+
+        .hero {
+            padding: 26px 24px;
+            border-radius: 28px;
+            background: rgba(255, 255, 255, 0.78);
+            backdrop-filter: blur(18px);
+            box-shadow: 0 20px 50px rgba(80, 70, 140, 0.16);
+            border: 1px solid rgba(255, 255, 255, 0.75);
+            margin-bottom: 22px;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .hero::after {
+            content: "";
+            position: absolute;
+            width: 170px;
+            height: 170px;
+            border-radius: 999px;
+            background: linear-gradient(135deg, #7c3cff, #00d4ff);
+            right: -60px;
+            top: -70px;
+            opacity: 0.18;
+        }
+
+        .eyebrow {
+            display: inline-block;
+            padding: 7px 12px;
+            border-radius: 999px;
+            background: #161616;
+            color: white;
+            font-size: 13px;
+            font-weight: 800;
+            letter-spacing: 0.04em;
+            text-transform: uppercase;
+            margin-bottom: 12px;
+        }
+
+        h1 {
+            margin: 0;
+            font-size: clamp(32px, 6vw, 52px);
+            line-height: 0.95;
+            letter-spacing: -0.06em;
+            position: relative;
+            z-index: 1;
+        }
+
+        .subtitle {
+            margin: 14px 0 0;
+            color: #4f4f5f;
+            font-size: 17px;
+            line-height: 1.5;
+            max-width: 590px;
+            position: relative;
+            z-index: 1;
         }
 
         .card {
-            background: white;
-            padding: 20px;
-            border-radius: 8px;
-            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-            margin-bottom: 20px;
+            background: rgba(255, 255, 255, 0.84);
+            backdrop-filter: blur(16px);
+            padding: 24px;
+            border-radius: 28px;
+            box-shadow: 0 18px 45px rgba(70, 60, 120, 0.12);
+            border: 1px solid rgba(255, 255, 255, 0.8);
+            margin-bottom: 22px;
+        }
+
+        h2 {
+            margin: 0 0 18px;
+            font-size: 24px;
+            letter-spacing: -0.03em;
         }
 
         .form-group {
-            margin-bottom: 15px;
+            margin-bottom: 18px;
         }
 
         label {
             display: block;
-            margin-bottom: 5px;
-            font-weight: bold;
+            margin-bottom: 8px;
+            font-weight: 850;
+            font-size: 15px;
         }
 
         input,
         textarea,
         select {
             width: 100%;
-            padding: 8px;
-            border: 1px solid #ccc;
-            border-radius: 4px;
-            box-sizing: border-box;
+            padding: 14px 15px;
+            border: 2px solid transparent;
+            border-radius: 18px;
+            background: #f7f7fb;
+            box-shadow: inset 0 0 0 1px #e4e4ee;
             font-size: 16px;
+            outline: none;
+            transition: 0.18s ease;
+        }
+
+        input:focus,
+        textarea:focus,
+        select:focus {
+            border-color: #7c3cff;
+            background: #ffffff;
+            box-shadow: 0 0 0 5px rgba(124, 60, 255, 0.12);
+        }
+
+        textarea {
+            resize: vertical;
+            min-height: 96px;
         }
 
         button {
-            background: #0070f3;
+            width: 100%;
+            background: linear-gradient(135deg, #ff4ecd, #7c3cff 55%, #00b8ff);
             color: white;
             border: none;
-            padding: 10px 15px;
-            border-radius: 4px;
+            padding: 15px 18px;
+            border-radius: 18px;
             cursor: pointer;
-            font-size: 16px;
+            font-size: 17px;
+            font-weight: 900;
+            box-shadow: 0 12px 30px rgba(124, 60, 255, 0.32);
+            transition: transform 0.15s ease, box-shadow 0.15s ease;
         }
 
         button:hover {
-            background: #0051a8;
+            transform: translateY(-2px);
+            box-shadow: 0 16px 34px rgba(124, 60, 255, 0.4);
         }
 
         button:disabled {
             background: #999;
             cursor: not-allowed;
+            transform: none;
+            box-shadow: none;
+        }
+
+        .reset-button {
+            margin-top: 16px;
+            background: linear-gradient(135deg, #111111, #ff335f);
+            box-shadow: 0 12px 30px rgba(255, 51, 95, 0.22);
+        }
+
+        .reset-button:hover {
+            box-shadow: 0 16px 34px rgba(255, 51, 95, 0.34);
+        }
+
+        .tally-grid {
+            display: grid;
+            grid-template-columns: repeat(2, minmax(0, 1fr));
+            gap: 14px;
+            margin-bottom: 20px;
+        }
+
+        .score-card {
+            border-radius: 24px;
+            padding: 18px;
+            color: white;
+            position: relative;
+            overflow: hidden;
+            min-height: 116px;
+        }
+
+        .score-card::after {
+            content: "";
+            position: absolute;
+            width: 100px;
+            height: 100px;
+            border-radius: 999px;
+            right: -25px;
+            bottom: -35px;
+            background: rgba(255,255,255,0.22);
+        }
+
+        .score-kaira {
+            background: linear-gradient(135deg, #ff4ecd, #ff9f1c);
+        }
+
+        .score-zephaniah {
+            background: linear-gradient(135deg, #00b8ff, #7c3cff);
+        }
+
+        .score-name {
+            font-size: 17px;
+            font-weight: 900;
+            position: relative;
+            z-index: 1;
+        }
+
+        .score-points {
+            font-size: 38px;
+            font-weight: 950;
+            letter-spacing: -0.05em;
+            margin-top: 10px;
+            position: relative;
+            z-index: 1;
+        }
+
+        .score-label {
+            font-size: 13px;
+            opacity: 0.9;
+            position: relative;
+            z-index: 1;
+        }
+
+        .logs-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 12px;
+            margin-bottom: 14px;
+        }
+
+        .pill {
+            display: inline-block;
+            padding: 7px 10px;
+            border-radius: 999px;
+            background: #f1ecff;
+            color: #5a27d9;
+            font-weight: 850;
+            font-size: 13px;
+            white-space: nowrap;
         }
 
         .log-item {
-            padding: 10px 0;
-            border-bottom: 1px solid #eee;
+            padding: 15px;
+            border-radius: 20px;
+            background: #ffffff;
+            border: 1px solid #ededf5;
             display: flex;
             justify-content: space-between;
-            gap: 12px;
+            gap: 14px;
+            margin-bottom: 10px;
+            box-shadow: 0 8px 20px rgba(40, 40, 80, 0.05);
+        }
+
+        .log-child {
+            font-weight: 950;
+            margin-bottom: 4px;
+        }
+
+        .log-remarks {
+            color: #333344;
+            line-height: 1.4;
+        }
+
+        .log-date {
+            color: #77778a;
+            font-size: 13px;
+            margin-top: 7px;
+        }
+
+        .points-positive,
+        .points-negative {
+            font-weight: 950;
+            font-size: 20px;
+            white-space: nowrap;
+            align-self: center;
+            padding: 8px 10px;
+            border-radius: 14px;
         }
 
         .points-positive {
-            color: green;
-            font-weight: bold;
-            white-space: nowrap;
+            color: #087a38;
+            background: #e5ffef;
         }
 
         .points-negative {
-            color: red;
-            font-weight: bold;
-            white-space: nowrap;
+            color: #b3133b;
+            background: #ffe6ed;
+        }
+
+        .empty-state {
+            text-align: center;
+            padding: 28px 16px;
+            border-radius: 22px;
+            background: #f7f7fb;
+            color: #686879;
         }
 
         .error {
-            color: red;
-            font-weight: bold;
+            color: #b3133b;
+            font-weight: 800;
+            background: #ffe6ed;
+            padding: 12px 14px;
+            border-radius: 16px;
         }
 
-        .muted {
-            color: #666;
-            font-size: 14px;
+        @media (max-width: 560px) {
+            body {
+                padding: 16px 10px;
+            }
+
+            .hero,
+            .card {
+                padding: 20px;
+                border-radius: 24px;
+            }
+
+            .tally-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .log-item {
+                align-items: flex-start;
+            }
         }
     </style>
 </head>
 
 <body>
 
-    <h2>Family Points Tracker</h2>
+    <main class="app-shell">
 
-    <div class="card">
-        <h3>Log New Incident</h3>
+        <section class="hero">
+            <div class="eyebrow">Family Quest Board</div>
+            <h1>Points, Power-ups & Plot Twists</h1>
+            <p class="subtitle">
+                Track the little wins, brave choices, funny moments, and consequence points for Kaira and Zephaniah.
+            </p>
+        </section>
 
-        <form id="behaviorForm">
-            <div class="form-group">
-                <label for="childName">Child</label>
-                <select id="childName" required>
-                    <option value="Son">Son</option>
-                    <option value="Daughter">Daughter</option>
-                </select>
+        <section class="card">
+            <h2>✨ Log New Moment</h2>
+
+            <form id="behaviorForm">
+                <div class="form-group">
+                    <label for="childName">Choose player</label>
+                    <select id="childName" required>
+                        <option value="Kaira">Kaira</option>
+                        <option value="Zephaniah">Zephaniah</option>
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label for="points">Points</label>
+                    <input type="number" id="points" placeholder="Try 10 for a win, or -5 for a deduction" required>
+                </div>
+
+                <div class="form-group">
+                    <label for="remarks">What happened?</label>
+                    <textarea id="remarks" rows="3" placeholder="E.g. Helped without being asked, showed courage, argued rudely, made a kind choice..." required></textarea>
+                </div>
+
+                <button id="submitButton" type="submit">🚀 Submit Log</button>
+            </form>
+        </section>
+
+        <section class="card">
+            <div class="logs-header">
+                <h2 style="margin: 0;">🏆 Scoreboard</h2>
+                <span class="pill">Live tally</span>
             </div>
 
-            <div class="form-group">
-                <label for="points">Points (Use negative for deductions)</label>
-                <input type="number" id="points" placeholder="e.g., 10 or -5" required>
+            <div id="tally"></div>
+
+            <div class="logs-header">
+                <h2 style="margin: 0;">📜 Recent Logs</h2>
+                <span class="pill">Latest first</span>
             </div>
 
-            <div class="form-group">
-                <label for="remarks">What happened? (Be as specific as you like)</label>
-                <textarea id="remarks" rows="3" placeholder="Enter the unique details of the event..." required></textarea>
-            </div>
+            <div id="logsList">Loading logs...</div>
 
-            <button id="submitButton" type="submit">Submit Log</button>
-        </form>
-    </div>
+            <button id="resetButton" type="button" class="reset-button">
+                🧨 Reset All Logs
+            </button>
+        </section>
 
-    <div class="card">
-        <h3>Recent Logs & Tally</h3>
-        <div id="tally" style="font-size: 18px; margin-bottom: 15px; font-weight: bold;"></div>
-        <div id="logsList">Loading logs...</div>
-    </div>
+    </main>
 
     <script>
         // ============================
@@ -141,17 +407,19 @@
         const SUPABASE_URL = "https://xyrcvnzrzzvujbyafzes.supabase.co";
 
         // Paste your Supabase ANON PUBLIC key here.
-        // Do not use the service role key in browser code.
+        // Do NOT use the service role key in browser code.
         const SUPABASE_KEY = "PASTE_YOUR_ANON_KEY_HERE";
 
-        // Important:
-        // The CDN library is called window.supabase.
-        // Your database client should NOT be called "supabase",
-        // otherwise you may get: Identifier 'supabase' has already been declared.
-        const supabaseClient = window.supabase.createClient(
-            SUPABASE_URL,
-            SUPABASE_KEY
-        );
+        let supabaseClient = null;
+
+        if (!window.supabase) {
+            console.error("Supabase library did not load. Check whether the CDN script is blocked.");
+        } else {
+            supabaseClient = window.supabase.createClient(
+                SUPABASE_URL,
+                SUPABASE_KEY
+            );
+        }
 
         // ============================
         // 2. Page Elements
@@ -161,6 +429,7 @@
         const logsList = document.getElementById("logsList");
         const tallyDiv = document.getElementById("tally");
         const submitButton = document.getElementById("submitButton");
+        const resetButton = document.getElementById("resetButton");
 
         // ============================
         // 3. Helper Functions
@@ -180,13 +449,40 @@
             console.error(message, error);
         }
 
+        function formatPoints(points) {
+            return points >= 0 ? `+${points}` : `${points}`;
+        }
+
+        function renderEmptyScoreboard() {
+            tallyDiv.innerHTML = `
+                <div class="tally-grid">
+                    <div class="score-card score-kaira">
+                        <div class="score-name">🌟 Kaira</div>
+                        <div class="score-points">0</div>
+                        <div class="score-label">total points</div>
+                    </div>
+
+                    <div class="score-card score-zephaniah">
+                        <div class="score-name">⚡ Zephaniah</div>
+                        <div class="score-points">0</div>
+                        <div class="score-label">total points</div>
+                    </div>
+                </div>
+            `;
+        }
+
         // ============================
         // 4. Fetch Logs
         // ============================
 
         async function fetchLogs() {
             logsList.innerHTML = "Loading logs...";
-            tallyDiv.innerHTML = "";
+            renderEmptyScoreboard();
+
+            if (!supabaseClient) {
+                showError("Supabase is not connected. Check your Supabase script and key.", null);
+                return;
+            }
 
             try {
                 const { data, error } = await supabaseClient
@@ -200,11 +496,11 @@
                 }
 
                 const totals = {
-                    Son: 0,
-                    Daughter: 0
+                    Kaira: 0,
+                    Zephaniah: 0
                 };
 
-                let html = "";
+                let logsHtml = "";
 
                 data.forEach(item => {
                     const childName = item.child_name || "Unknown";
@@ -214,30 +510,45 @@
                         ? new Date(item.created_at).toLocaleString()
                         : "No date";
 
-                    totals[childName] = (totals[childName] || 0) + points;
+                    if (totals[childName] !== undefined) {
+                        totals[childName] += points;
+                    }
 
                     const pointsClass = points >= 0 ? "points-positive" : "points-negative";
-                    const pointsText = points >= 0 ? `+${points}` : `${points}`;
 
-                    html += `
+                    logsHtml += `
                         <div class="log-item">
                             <div>
-                                <strong>${escapeHtml(childName)}</strong>: ${escapeHtml(remarks)}
-                                <br>
-                                <span class="muted">${escapeHtml(createdAt)}</span>
+                                <div class="log-child">${escapeHtml(childName)}</div>
+                                <div class="log-remarks">${escapeHtml(remarks)}</div>
+                                <div class="log-date">${escapeHtml(createdAt)}</div>
                             </div>
-                            <span class="${pointsClass}">${pointsText}</span>
+                            <div class="${pointsClass}">${formatPoints(points)}</div>
                         </div>
                     `;
                 });
 
                 tallyDiv.innerHTML = `
-                    Current Standings:
-                    Son: ${totals.Son} pts |
-                    Daughter: ${totals.Daughter} pts
+                    <div class="tally-grid">
+                        <div class="score-card score-kaira">
+                            <div class="score-name">🌟 Kaira</div>
+                            <div class="score-points">${totals.Kaira}</div>
+                            <div class="score-label">total points</div>
+                        </div>
+
+                        <div class="score-card score-zephaniah">
+                            <div class="score-name">⚡ Zephaniah</div>
+                            <div class="score-points">${totals.Zephaniah}</div>
+                            <div class="score-label">total points</div>
+                        </div>
+                    </div>
                 `;
 
-                logsList.innerHTML = html || "No incidents logged yet.";
+                logsList.innerHTML = logsHtml || `
+                    <div class="empty-state">
+                        No moments logged yet. Start the quest above ✨
+                    </div>
+                `;
 
             } catch (err) {
                 showError("Unexpected JavaScript error while loading logs.", err);
@@ -250,6 +561,11 @@
 
         form.addEventListener("submit", async function(event) {
             event.preventDefault();
+
+            if (!supabaseClient) {
+                alert("Supabase is not connected. Check your setup.");
+                return;
+            }
 
             const child_name = document.getElementById("childName").value;
             const points = parseInt(document.getElementById("points").value, 10);
@@ -266,7 +582,7 @@
             }
 
             submitButton.disabled = true;
-            submitButton.textContent = "Submitting...";
+            submitButton.textContent = "Saving...";
 
             try {
                 const { error } = await supabaseClient
@@ -294,12 +610,57 @@
 
             } finally {
                 submitButton.disabled = false;
-                submitButton.textContent = "Submit Log";
+                submitButton.textContent = "🚀 Submit Log";
             }
         });
 
         // ============================
-        // 6. Load Logs on Page Load
+        // 6. Reset All Logs
+        // ============================
+
+        resetButton.addEventListener("click", async function() {
+            if (!supabaseClient) {
+                alert("Supabase is not connected. Check your setup.");
+                return;
+            }
+
+            const confirmed = confirm(
+                "Are you sure you want to reset everything? This will delete all logs and set both scores back to 0."
+            );
+
+            if (!confirmed) {
+                return;
+            }
+
+            resetButton.disabled = true;
+            resetButton.textContent = "Resetting...";
+
+            try {
+                const { error } = await supabaseClient
+                    .from("behavior_log")
+                    .delete()
+                    .not("created_at", "is", null);
+
+                if (error) {
+                    console.error("Reset error:", error);
+                    alert("Failed to reset logs. Check the Console for details.");
+                    return;
+                }
+
+                await fetchLogs();
+
+            } catch (err) {
+                console.error("Unexpected reset error:", err);
+                alert("Unexpected error while resetting. Check the Console for details.");
+
+            } finally {
+                resetButton.disabled = false;
+                resetButton.textContent = "🧨 Reset All Logs";
+            }
+        });
+
+        // ============================
+        // 7. Load Logs on Page Load
         // ============================
 
         fetchLogs();
