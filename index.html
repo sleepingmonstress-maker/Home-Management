@@ -51,36 +51,42 @@
     </div>
 
     <script>
-        // 1. YOUR SUPABASE DETAILS (PERFECTLY SET)
+        // 1. Database Configuration
         const SUPABASE_URL = "https://xyrcvnzrzzvujbyafzes.supabase.co";
         const SUPABASE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Inh5cmN2bnpyenp2dWpieWFmemVzIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODI0NTU3MzgsImV4cCI6MjA5ODAzMTczOH0.bWYZGkf-2o7NirqSFi-VOQHTUbTaCylmi80mZM84pYA";
         
-        // FIXED: Removed the invalid "@supabase/supabase-js." namespace call
-        const supabase = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+        // FIXED: Initializing client via the correct global library instance
+        const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
         const form = document.getElementById('behaviorForm');
         const logsList = document.getElementById('logsList');
         const tallyDiv = document.getElementById('tally');
 
-        // 2. Fetch and display data
+        // 2. Fetch and display data from Supabase
         async function fetchLogs() {
-            const { data, error } = await supabase
+            const { data, error } = await supabaseClient
                 .from('behavior_log')
                 .select('*')
                 .order('created_at', { ascending: false });
 
             if (error) {
-                logsList.innerHTML = "Error loading data.";
-                console.error(error);
+                logsList.innerHTML = "Error loading data from database.";
+                console.error("Fetch error:", error);
                 return;
             }
 
-            const totals = {};
+            const totals = { "Son": 0, "Daughter": 0 };
             let html = '';
 
             data.forEach(item => {
-                totals[item.child_name] = (totals[item.child_name] || 0) + item.points;
+                // Tally points per child dynamically
+                if (totals[item.child_name] !== undefined) {
+                    totals[item.child_name] += item.points;
+                } else {
+                    totals[item.child_name] = item.points;
+                }
 
+                // Format timestamp and styling
                 const date = new Date(item.created_at).toLocaleDateString();
                 const ptsClass = item.points >= 0 ? 'points-positive' : 'points-negative';
                 const ptsSign = item.points >= 0 ? `+${item.points}` : item.points;
@@ -96,6 +102,7 @@
                 `;
             });
 
+            // Update Current Standings DOM
             let tallyHtml = 'Current Standings: ';
             for (const [child, score] of Object.entries(totals)) {
                 tallyHtml += `${child}: ${score}pts | `;
@@ -105,28 +112,28 @@
             logsList.innerHTML = html || 'No incidents logged yet.';
         }
 
-        // 3. Handle Form Submission
+        // 3. Handle New Form Submission
         form.addEventListener('submit', async (e) => {
             e.preventDefault();
             
             const child_name = document.getElementById('childName').value;
-            const points = parseInt(document.getElementById('points').value);
+            const points = parseInt(document.getElementById('points').value, 10);
             const remarks = document.getElementById('remarks').value;
 
-            const { error } = await supabase
+            const { error } = await supabaseClient
                 .from('behavior_log')
                 .insert([{ child_name, points, remarks }]);
 
             if (error) {
-                alert('Failed to log event.');
-                console.error(error);
+                alert('Failed to log event into database.');
+                console.error("Insert error:", error);
             } else {
                 form.reset();
-                fetchLogs(); 
+                fetchLogs(); // Automatically refresh UI list
             }
         });
 
-        // Initial load
+        // Trigger initial data call on page load
         fetchLogs();
     </script>
 </body>
